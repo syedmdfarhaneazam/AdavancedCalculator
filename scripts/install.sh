@@ -74,7 +74,7 @@ clone_or_update_repo() {
     echo -e "${CYAN}Checking for repository updates...${RESET}"
     if [ -d "$REPO_DIR" ]; then
         cd "$REPO_DIR"
-        git pull origin main
+        git pull origin master
         if [ $? -ne 0 ]; then
             echo -e "${RED}Failed to update repository${RESET}"
             exit 1
@@ -113,7 +113,7 @@ RED="\033[1;31m"
 RESET="\033[0m"
 if [ -d "\$REPO_DIR" ]; then
     cd "\$REPO_DIR"
-    git pull origin main
+    git pull origin master
     if [ \$? -eq 0 ]; then
         cp "\$REPO_DIR/src/calculator.sh" "\$INSTALL_DIR/"
         cp "\$REPO_DIR/bin/calculate" "\$INSTALL_DIR/"
