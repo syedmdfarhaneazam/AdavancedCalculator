@@ -29,8 +29,10 @@ A powerful command-line scientific calculator written in Bash.
 2. Run the installation script:
 
     ```bash
-    sudo ./install.sh
+    ./install.sh
     ```
+
+    **Note**: You will be prompted for your `sudo` password to install dependencies (`bc`, `git`) and configure the APT update hook.
 
 3. Source your shell configuration to apply PATH changes:
 
@@ -44,7 +46,7 @@ A powerful command-line scientific calculator written in Bash.
     calculate
     ```
 
-**Note**: The installation script requires `sudo` to install dependencies (`bc`, `git`) and configure an APT hook for automatic updates. The calculator will update from the GitHub repository whenever you run `sudo apt update`.
+The calculator will update automatically from the GitHub repository whenever you run `sudo apt update`.
 
 ### Manual Installation
 
@@ -87,11 +89,14 @@ A powerful command-line scientific calculator written in Bash.
 6.  (Optional) Set up automatic updates with `sudo apt update`:
 
         ```bash
-        sudo bash -c 'cat > /etc/apt/apt.conf.d/99-advanced-calculator-update' << EOF
+        sudo bash -c 'cat > /usr/local/bin/update-advanced-calculator.sh' << EOF
 
     #!/bin/bash
     REPO_DIR="$HOME/.local/share/advanced-calculator-repo"
 INSTALL_DIR="$HOME/.local/share/advanced-calculator"
+    GREEN="\033[1;32m"
+    RED="\033[1;31m"
+    RESET="\033[0m"
     if [ -d "\$REPO_DIR" ]; then
     cd "\$REPO_DIR"
     git pull origin main
@@ -99,13 +104,16 @@ INSTALL_DIR="$HOME/.local/share/advanced-calculator"
     cp "\$REPO_DIR/src/calculator.sh" "\$INSTALL_DIR/"
     cp "\$REPO_DIR/bin/calculate" "\$INSTALL_DIR/"
     chmod +x "\$INSTALL_DIR/calculate" "\$INSTALL_DIR/calculator.sh"
-    echo -e "\033[1;32mAdvanced Calculator updated successfully\033[0m"
+    echo -e "\${GREEN}Advanced Calculator updated successfully\${RESET}"
     else
-    echo -e "\033[1;31mFailed to update Advanced Calculator\033[0m"
+    echo -e "\${RED}Failed to update Advanced Calculator\${RESET}"
     fi
     fi
     EOF
-    sudo chmod +x /etc/apt/apt.conf.d/99-advanced-calculator-update
+    sudo chmod +x /usr/local/bin/update-advanced-calculator.sh
+    sudo bash -c 'cat > /etc/apt/apt.conf.d/99-advanced-calculator-update' << EOF
+    DPkg::Post-Invoke {"/bin/bash /-der-calculator.sh";};
+    EOF
     ```
 
 ## Usage

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# colours
+# Color & Style Setup
 GREEN="\033[1;32m"
 RED="\033[1;31m"
 YELLOW="\033[1;33m"
@@ -28,15 +28,16 @@ echo -e "${BLUE}${BOLD}═══════════════════
 echo -e "${YELLOW}${BOLD}        Advanced Calculator Installation        ${RESET}"
 echo -e "${BLUE}${BOLD}═════════════════════════════════════════════════${RESET}"
 
-# paths & Variables
+# Paths & Variables
 REPO_URL="https://github.com/syedmdfarhaneazam/AdavancedCalculator.git"
 REPO_DIR="$HOME/.local/share/advanced-calculator-repo"
 INSTALL_DIR="$HOME/.local/share/advanced-calculator"
 SYMLINK_DIR="$HOME/.local/bin"
 SYMLINK="$SYMLINK_DIR/calculate"
-UPDATE_SCRIPT="/etc/apt/apt.conf.d/99-advanced-calculator-update"
+UPDATE_SCRIPT="/usr/local/bin/update-advanced-calculator.sh"
+APT_HOOK="/etc/apt/apt.conf.d/99-advanced-calculator-update"
 
-# function: Progress Bar
+# Function: Progress Bar
 progress_bar() {
     local duration=$1
     local steps=20
@@ -49,7 +50,7 @@ progress_bar() {
     echo -e "${YELLOW}] ${GREEN}Done!${RESET}"
 }
 
-# function: check Dependencies
+# Function: Check Dependencies
 check_dependencies() {
     echo -e "${CYAN}${BOLD}Checking dependencies...${RESET}"
     if ! command -v bc &> /dev/null; then
@@ -68,7 +69,7 @@ check_dependencies() {
     fi
 }
 
-# function: clone or update repo
+# Function: Clone or Update Repository
 clone_or_update_repo() {
     echo -e "${CYAN}Checking for repository updates...${RESET}"
     if [ -d "$REPO_DIR" ]; then
@@ -89,7 +90,7 @@ clone_or_update_repo() {
     fi
 }
 
-# function: Install Calculator
+# Function: Install Calculator
 install_calculator() {
     echo -e "${CYAN}Installing calculator script...${RESET}"
     mkdir -p "$INSTALL_DIR" "$SYMLINK_DIR"
@@ -100,29 +101,37 @@ install_calculator() {
     progress_bar 1
 }
 
-# function: Configure APT Hook
+# Function: Configure APT Hook
 configure_apt_hook() {
     echo -e "${CYAN}${BOLD}Configuring APT update hook...${RESET}"
     sudo bash -c "cat > $UPDATE_SCRIPT" << EOF
 #!/bin/bash
-if [ -d "$REPO_DIR" ]; then
-    cd "$REPO_DIR"
+REPO_DIR="$HOME/.local/share/advanced-calculator-repo"
+INSTALL_DIR="$HOME/.local/share/advanced-calculator"
+GREEN="\033[1;32m"
+RED="\033[1;31m"
+RESET="\033[0m"
+if [ -d "\$REPO_DIR" ]; then
+    cd "\$REPO_DIR"
     git pull origin main
     if [ \$? -eq 0 ]; then
-        cp "$REPO_DIR/src/calculator.sh" "$INSTALL_DIR/"
-        cp "$REPO_DIR/bin/calculate" "$INSTALL_DIR/"
-        chmod +x "$INSTALL_DIR/calculate" "$INSTALL_DIR/calculator.sh"
-        echo -e "${GREEN}Advanced Calculator updated successfully${RESET}"
+        cp "\$REPO_DIR/src/calculator.sh" "\$INSTALL_DIR/"
+        cp "\$REPO_DIR/bin/calculate" "\$INSTALL_DIR/"
+        chmod +x "\$INSTALL_DIR/calculate" "\$INSTALL_DIR/calculator.sh"
+        echo -e "\${GREEN}Advanced Calculator updated successfully\${RESET}"
     else
-        echo -e "${RED}Failed to update Advanced Calculator${RESET}"
+        echo -e "\${RED}Failed to update Advanced Calculator\${RESET}"
     fi
 fi
 EOF
     sudo chmod +x "$UPDATE_SCRIPT"
-    echo -e "${GREEN}✓ APT hook configured at $UPDATE_SCRIPT${RESET}"
+    sudo bash -c "cat > $APT_HOOK" << EOF
+DPkg::Post-Invoke {"/bin/bash $UPDATE_SCRIPT";};
+EOF
+    echo -e "${GREEN}✓ APT hook configured at $APT_HOOK${RESET}"
 }
 
-# function: Configure Shell PATH
+# Function: Configure Shell PATH
 configure_shell_env() {
     echo -e "${CYAN}${BOLD}Configuring shell PATH...${RESET}"
     CURRENT_SHELL=$(basename "$SHELL")
