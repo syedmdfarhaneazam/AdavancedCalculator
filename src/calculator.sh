@@ -1,20 +1,16 @@
 #!/bin/bash
-
 # colours
 RESET="\033[0m"
 GREEN="\033[1;32m"  # success
 RED="\033[1;31m"    # error
 CYAN="\033[1;36m"   # user Input
 YELLOW="\033[1;33m" # warnings
-
 # global variables
 result=0
 declare -A variables
-
 # mathematical constants
 PI=3.14159265358979323846
 E=2.71828182845904523536
-
 #help section
 display_help() {
     echo -e "${YELLOW}=== Scientific Calculator Help ===${RESET}"
@@ -31,33 +27,27 @@ display_help() {
     echo -e "${CYAN}  exit - Quit the calculator${RESET}"
     echo -e "${CYAN}  help - Display this help${RESET}"
 }
-
 # function to convert degrees to radians
 deg_to_rad() {
     echo "scale=10; $1 * $PI / 180" | bc -l
 }
-
 # function to convert radians to degrees
 rad_to_deg() {
     echo "scale=10; $1 * 180 / $PI" | bc -l
 }
-
 # mathe functions
 math_sin() {
     local angle_rad=$(deg_to_rad $1)
     echo "scale=10; s($angle_rad)" | bc -l
 }
-
 math_cos() {
     local angle_rad=$(deg_to_rad $1)
     echo "scale=10; c($angle_rad)" | bc -l
 }
-
 math_tan() {
     local angle_rad=$(deg_to_rad $1)
     echo "scale=10; s($angle_rad)/c($angle_rad)" | bc -l
 }
-
 math_sqrt() {
     if (( $(echo "$1 < 0" | bc -l) )); then
         echo "Error: Cannot take square root of negative number" >&2
@@ -65,7 +55,6 @@ math_sqrt() {
     fi
     echo "scale=10; sqrt($1)" | bc -l
 }
-
 math_log() {
     if (( $(echo "$1 <= 0" | bc -l) )); then
         echo "Error: Cannot take log of non-positive number" >&2
@@ -73,7 +62,6 @@ math_log() {
     fi
     echo "scale=10; l($1)/l(10)" | bc -l
 }
-
 math_ln() {
     if (( $(echo "$1 <= 0" | bc -l) )); then
         echo "Error: Cannot take ln of non-positive number" >&2
@@ -81,11 +69,9 @@ math_ln() {
     fi
     echo "scale=10; l($1)" | bc -l
 }
-
 math_exp() {
     echo "scale=10; e($1)" | bc -l
 }
-
 math_abs() {
     if (( $(echo "$1 < 0" | bc -l) )); then
         echo "scale=10; -($1)" | bc -l
@@ -93,11 +79,9 @@ math_abs() {
         echo "scale=10; $1" | bc -l
     fi
 }
-
 math_floor() {
     echo "scale=0; $1/1" | bc -l
 }
-
 math_ceil() {
     local int_part=$(echo "scale=0; $1/1" | bc -l)
     if (( $(echo "$1 > $int_part" | bc -l) )); then
@@ -106,11 +90,9 @@ math_ceil() {
         echo "$int_part"
     fi
 }
-
 math_round() {
     echo "scale=0; ($1 + 0.5)/1" | bc -l
 }
-
 math_asin() {
     if (( $(echo "$1 < -1 || $1 > 1" | bc -l) )); then
         echo "Error: Argument for asin must be in range [-1, 1]" >&2
@@ -134,7 +116,6 @@ math_asin() {
     local result_rad=$(echo "scale=10; a($1/$denominator)" | bc -l)
     rad_to_deg $result_rad
 }
-
 math_acos() {
     if (( $(echo "$1 < -1 || $1 > 1" | bc -l) )); then
         echo "Error: Argument for acos must be in range [-1, 1]" >&2
@@ -164,28 +145,26 @@ math_acos() {
     
     rad_to_deg $result_rad
 }
-
 math_atan() {
     local result_rad=$(echo "scale=10; a($1)" | bc -l)
     rad_to_deg $result_rad
 }
-
 # function to replace variables and constants
 replace_variables() {
     local expr="$1"
     
-    # replace constants
-    expr="${expr//pi/$PI}"
-    expr="${expr//e/$E}"
+    # replace constants first (pi and e)
+    expr=$(echo "$expr" | sed -E 's/\bpi\b/('$PI')/g')
+    expr=$(echo "$expr" | sed -E 's/\be\b/('$E')/g')
     
-    # replace user variables
+    # replace user variables with word boundaries
     for var in "${!variables[@]}"; do
-        expr="${expr//$var/${variables[$var]}}"
+        # Use sed with word boundaries to replace variables
+        expr=$(echo "$expr" | sed -E 's/\b'$var'\b/('${variables[$var]}')/g')
     done
     
     echo "$expr"
 }
-
 # function to evaluate mathematical functions
 evaluate_function() {
     local func_name="$1"
@@ -209,7 +188,6 @@ evaluate_function() {
         *) echo "Error: Unknown function: $func_name" >&2; return 1 ;;
     esac
 }
-
 # function to find matching parenthesis
 find_matching_paren() {
     local expr="$1"
@@ -232,7 +210,6 @@ find_matching_paren() {
     
     echo "-1"
 }
-
 # function to parse and evaluate expressions (BODMAS order)
 evaluate_expression() {
     local expr="$1"
@@ -246,7 +223,7 @@ evaluate_expression() {
         return 1
     fi
     
-    # replace variables
+    # replace variables first
     expr=$(replace_variables "$expr")
     
     # handle functions first
@@ -308,7 +285,6 @@ evaluate_expression() {
     
     echo "$result"
 }
-
 # function to save variables
 save_variable() {
     local input="$1"
@@ -338,7 +314,6 @@ save_variable() {
         echo -e "${GREEN}Saved: $var_name = $result${RESET}"
     fi
 }
-
 # function to recall variables
 recall_variable() {
     local var_name="$1"
@@ -350,7 +325,6 @@ recall_variable() {
         echo -e "${RED}Error: Variable not found!${RESET}"
     fi
 }
-
 # function to display all variables
 display_all_variables() {
     if [[ ${#variables[@]} -eq 0 ]]; then
@@ -362,12 +336,11 @@ display_all_variables() {
         done
     fi
 }
-
 # main function
 main() {
     echo -e "${YELLOW}Welcome to Advanced Scientific Calculator!${RESET}"
     echo -e "${YELLOW}Enter expressions (type 'exit' to quit)${RESET}"
-    echo -e "${YELLOW}Examples: sin(80)+cos(60), 5+4+9, (5+4)*(6/7)${RESET}"
+    echo -e "${YELLOW}Examples: sin(80)+cos(60), 5+4+9, (5+4)*(6/7), total-fee-flip${RESET}"
     echo -e "${YELLOW}Functions: sin, cos, tan, sqrt, log, ln, exp, abs, floor, ceil, round${RESET}"
     echo -e "${YELLOW}Advanced Functions: save, recall, help, clear${RESET}"
     
@@ -424,13 +397,11 @@ main() {
         esac
     done
 }
-
 # check if bc is available
 if ! command -v bc &> /dev/null; then
     echo -e "${RED}Error: 'bc' calculator is required but not installed.${RESET}"
     echo -e "${YELLOW}Please install bc: sudo apt-get install bc (Ubuntu/Debian) or brew install bc (macOS)${RESET}"
     exit 1
 fi
-
 # starting the calculator
 main
