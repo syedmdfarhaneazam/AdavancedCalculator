@@ -340,7 +340,7 @@ display_all_variables() {
 main() {
     echo -e "${YELLOW}Welcome to Advanced Scientific Calculator!${RESET}"
     echo -e "${YELLOW}Enter expressions (type 'exit' to quit)${RESET}"
-    echo -e "${YELLOW}Examples: sin(80)+cos(60), 5+4+9, (5+4)*(6/7), total-fee-flip${RESET}"
+    echo -e "${YELLOW}Examples: sin(80)+cos(60), asin(log(10)), (5+4)*(6/7), <variable1>+<variable2>${RESET}"
     echo -e "${YELLOW}Functions: sin, cos, tan, sqrt, log, ln, exp, abs, floor, ceil, round${RESET}"
     echo -e "${YELLOW}Advanced Functions: save, recall, help, clear${RESET}"
     
